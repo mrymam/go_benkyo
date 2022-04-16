@@ -6,11 +6,6 @@
 $ brew install dbmate
 ```
 
-### init .env file
-```
-$ cp db/migrations/.env.default db/migrations/.env
-```
-
 ## build & run
 
 ```
@@ -18,6 +13,9 @@ $ docker compose up
 ```
 
 ## migrate
+
 ```
+// init migrate .env file
+$ cp db/migrations/.env.default db/migrations/.env
 $ make migrate
 ```
