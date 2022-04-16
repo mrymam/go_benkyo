@@ -3,10 +3,20 @@ package main
 import (
 	"net/http"
 
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/onyanko-pon/go_benkyo/tutorial2/pkg/controller"
 )
+
+func connectDB() (gorm.DB, error) {
+	dsn := "admin:password@tcp(127.0.0.1:3306)/mydb?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+
+	return *db, err
+}
 
 func router() http.Handler {
 	r := chi.NewRouter()
@@ -15,8 +25,13 @@ func router() http.Handler {
 		w.Write([]byte("welcome"))
 	})
 
-	userController := controller.User{}
+	db, err := connectDB()
 
+	if err != nil {
+		panic(err)
+	}
+
+	userController := controller.NewUserController(db)
 	r.Get("/users", userController.GetAll)
 
 	return r

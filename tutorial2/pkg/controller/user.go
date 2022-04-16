@@ -6,24 +6,39 @@ import (
 
 	"github.com/onyanko-pon/go_benkyo/tutorial2/pkg/model"
 	"github.com/onyanko-pon/go_benkyo/tutorial2/pkg/view"
+	"gorm.io/gorm"
 )
 
-type User struct{}
+type User struct {
+	db gorm.DB
+}
+
+func NewUserController(db gorm.DB) User {
+	return User{
+		db: db,
+	}
+}
 
 func (u User) GetAll(w http.ResponseWriter, r *http.Request) {
-	user := model.User{
-		ID:       1,
-		Username: "hogehoge",
+
+	users := []model.User{}
+	result := u.db.Find(&users)
+
+	if result.Error != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
-	viewUser := view.User{
-		ID:       user.ID,
-		Username: user.Username,
+	viewUsers := []view.User{}
+	for _, u := range users {
+		vu := view.User{
+			ID:       u.ID,
+			Username: u.Username,
+		}
+		viewUsers = append(viewUsers, vu)
 	}
 
-	users := []view.User{viewUser}
-
-	j, err := json.Marshal(users)
+	j, err := json.Marshal(viewUsers)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
