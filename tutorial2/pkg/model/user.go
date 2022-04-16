@@ -4,6 +4,6 @@ import "gorm.io/gorm"
 
 type User struct {
 	gorm.Model
-	ID       uint64
+	ID       uint16
 	Username string
 }

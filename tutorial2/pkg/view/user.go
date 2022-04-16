@@ -1,6 +1,6 @@
 package view
 
 type User struct {
-	ID       uint64 `json:"id"`
+	ID       uint16 `json:"id"`
 	Username string `json:"username"`
 }
