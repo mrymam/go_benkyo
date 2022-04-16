@@ -11,14 +11,31 @@ services:
     environment:
       ENV: docker
       PORT: 3000
-    # depends_on:
-    #   - sample-mysql
+    depends_on:
+      - sample-mysql
     volumes:
       - ./:/go/src/app
     working_dir: /go/src/app
-#     networks:
-#       - sample
+    networks:
+      - sample
 
-# networks:
-#   sample:
-#     external: true
+  sample-mysql:
+    container_name: sample-mysql
+    image: mysql:5.7
+    platform: linux/x86_64
+    environment:
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    networks:
+      - sample
+    # volumes:
+    #   - ./mysql/init:/docker-entrypoint-initdb.d
+    #   - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+
+networks:
+  sample:

@@ -12,7 +12,7 @@ import (
 )
 
 func connectDB() (gorm.DB, error) {
-	dsn := "admin:password@tcp(127.0.0.1:3306)/mydb?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "admin:password@tcp(sample-mysql:3306)/mydb?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
 	return *db, err
