@@ -8,6 +8,7 @@ import (
 
 	"github.com/onyanko-pon/go_benkyo/tutorial2/pkg/model"
 	"github.com/onyanko-pon/go_benkyo/tutorial2/pkg/view"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -54,31 +55,28 @@ type CreateBody struct {
 	Password string `json:"password"`
 }
 
-func
-
 func (u User) Create(w http.ResponseWriter, r *http.Request) {
 
 	body := CreateBody{}
 	err := json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Print(fmt.Printf("request body json decode failed :%s", err.Error()))
+		log.Print(fmt.Printf("request body json decode failed: %s", err.Error()))
 		return
 	}
 
-	hash :=[]byte("")
-	err = bcrypt.CompareHashAndPassword(hash,[]byte(body.Password))
+	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), 12)
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Print(fmt.Printf("password encript failed :%s", err.Error()))
+		log.Print(fmt.Printf("password encript failed: %s\n", err.Error()))
 		return
 	}
 
 	user := model.User{
 		ID:           0,
 		Username:     body.Username,
-		PasswordHash: hash,
+		PasswordHash: string(hash),
 	}
 	result := u.db.Create(&user)
 
