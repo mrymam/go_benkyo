@@ -11,6 +11,12 @@ services:
     environment:
       ENV: docker
       PORT: 3000
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: password
+      MYSQL_HOST: sample-mysql
+      MYSQL_PORT: 3306
     depends_on:
       - sample-mysql
     volumes:

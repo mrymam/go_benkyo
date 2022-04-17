@@ -6,10 +6,10 @@
 $ brew install dbmate
 ```
 
-## build & run
+## build & run dev
 
 ```bash
-$ docker compose up
+$ make dev
 ```
 
 ## migrate
