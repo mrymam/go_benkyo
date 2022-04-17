@@ -49,18 +49,41 @@ func (u User) GetAll(w http.ResponseWriter, r *http.Request) {
 	w.Write(j)
 }
 
+type CreateBody struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+func
+
 func (u User) Create(w http.ResponseWriter, r *http.Request) {
+
+	body := CreateBody{}
+	err := json.NewDecoder(r.Body).Decode(&body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Print(fmt.Printf("request body json decode failed :%s", err.Error()))
+		return
+	}
+
+	hash :=[]byte("")
+	err = bcrypt.CompareHashAndPassword(hash,[]byte(body.Password))
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Print(fmt.Printf("password encript failed :%s", err.Error()))
+		return
+	}
 
 	user := model.User{
 		ID:           0,
-		Username:     "hogehoge",
-		PasswordHash: "hugahuga",
+		Username:     body.Username,
+		PasswordHash: hash,
 	}
 	result := u.db.Create(&user)
 
 	if result.Error != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-
 		log.Print(fmt.Printf("db user create failed :%s", result.Error.Error()))
 		return
 	}
@@ -70,6 +93,7 @@ func (u User) Create(w http.ResponseWriter, r *http.Request) {
 		Username: user.Username,
 	}
 	j, err := json.Marshal(viewUser)
+
 	if err != nil {
 		log.Print(fmt.Printf("json encode failed :%s", err.Error()))
 		w.WriteHeader(http.StatusInternalServerError)
