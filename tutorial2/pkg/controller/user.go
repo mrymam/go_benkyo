@@ -22,6 +22,10 @@ func NewUserController(db gorm.DB) User {
 	}
 }
 
+type GetAllResBody struct {
+	Users []view.User `json:"users"`
+}
+
 func (u User) GetAll(w http.ResponseWriter, r *http.Request) {
 
 	users := []model.User{}
@@ -40,8 +44,10 @@ func (u User) GetAll(w http.ResponseWriter, r *http.Request) {
 		}
 		viewUsers = append(viewUsers, vu)
 	}
-
-	j, err := json.Marshal(viewUsers)
+	resBody := GetAllResBody{
+		Users: viewUsers,
+	}
+	j, err := json.Marshal(resBody)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -50,22 +56,26 @@ func (u User) GetAll(w http.ResponseWriter, r *http.Request) {
 	w.Write(j)
 }
 
-type CreateBody struct {
+type CreateReqBody struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
+type CreateResBody struct {
+	User view.User `json:"user"`
+}
+
 func (u User) Create(w http.ResponseWriter, r *http.Request) {
 
-	body := CreateBody{}
-	err := json.NewDecoder(r.Body).Decode(&body)
+	reqBody := CreateReqBody{}
+	err := json.NewDecoder(r.Body).Decode(&reqBody)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Print(fmt.Printf("request body json decode failed: %s", err.Error()))
 		return
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), 12)
+	hash, err := bcrypt.GenerateFromPassword([]byte(reqBody.Password), 12)
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -75,7 +85,7 @@ func (u User) Create(w http.ResponseWriter, r *http.Request) {
 
 	user := model.User{
 		ID:           0,
-		Username:     body.Username,
+		Username:     reqBody.Username,
 		PasswordHash: string(hash),
 	}
 	result := u.db.Create(&user)
@@ -90,7 +100,10 @@ func (u User) Create(w http.ResponseWriter, r *http.Request) {
 		ID:       user.ID,
 		Username: user.Username,
 	}
-	j, err := json.Marshal(viewUser)
+	resBody := CreateResBody{
+		User: viewUser,
+	}
+	j, err := json.Marshal(resBody)
 
 	if err != nil {
 		log.Print(fmt.Printf("json encode failed :%s", err.Error()))
