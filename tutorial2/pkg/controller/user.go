@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/onyanko-pon/go_benkyo/tutorial2/pkg/model"
 	"github.com/onyanko-pon/go_benkyo/tutorial2/pkg/view"
 	"golang.org/x/crypto/bcrypt"
@@ -56,6 +58,54 @@ func (u User) GetAll(w http.ResponseWriter, r *http.Request) {
 	w.Write(j)
 }
 
+type GetOneResBody struct {
+	User view.User `json:"user"`
+}
+
+func (c User) GetOne(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+
+	fmt.Printf("hoge: %d\n", id)
+
+	if err != nil {
+		log.Print(fmt.Sprintf("invalid user id: %s", err.Error()))
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if id <= 0 {
+		log.Print(fmt.Sprintf("invalid user id (0 or less) id:%d", id))
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	u := model.User{}
+	result := c.db.First(&u, id)
+
+	if result.Error != nil {
+		log.Print(fmt.Sprintf("db user find first: %s", result.Error.Error()))
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	vu := view.User{
+		ID:       u.ID,
+		Username: u.Username,
+	}
+	resBody := GetOneResBody{
+		User: vu,
+	}
+	j, err := json.Marshal(resBody)
+	if err != nil {
+		log.Print(fmt.Sprintf("json encode failed: %s", err.Error()))
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write(j)
+}
+
 type CreateReqBody struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -71,7 +121,7 @@ func (u User) Create(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&reqBody)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Print(fmt.Printf("request body json decode failed: %s", err.Error()))
+		log.Print(fmt.Sprintf("request body json decode failed: %s", err.Error()))
 		return
 	}
 
@@ -79,7 +129,7 @@ func (u User) Create(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Print(fmt.Printf("password encript failed: %s\n", err.Error()))
+		log.Print(fmt.Sprintf("password encript failed: %s\n", err.Error()))
 		return
 	}
 
@@ -92,7 +142,7 @@ func (u User) Create(w http.ResponseWriter, r *http.Request) {
 
 	if result.Error != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Print(fmt.Printf("db user create failed :%s", result.Error.Error()))
+		log.Print(fmt.Sprintf("db user create failed :%s", result.Error.Error()))
 		return
 	}
 
@@ -106,7 +156,7 @@ func (u User) Create(w http.ResponseWriter, r *http.Request) {
 	j, err := json.Marshal(resBody)
 
 	if err != nil {
-		log.Print(fmt.Printf("json encode failed :%s", err.Error()))
+		log.Print(fmt.Sprintf("json encode failed :%s", err.Error()))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

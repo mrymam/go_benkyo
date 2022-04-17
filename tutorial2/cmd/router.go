@@ -32,6 +32,7 @@ func router() http.Handler {
 	}
 
 	userController := controller.NewUserController(db)
+	r.Get("/users/{id}", userController.GetOne)
 	r.Get("/users", userController.GetAll)
 	r.Post("/users", userController.Create)
 
