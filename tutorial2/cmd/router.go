@@ -29,8 +29,8 @@ func connectDB() (gorm.DB, error) {
 func router() http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("welcome"))
+	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Health check succeeded⚡️"))
 	})
 
 	db, err := connectDB()
