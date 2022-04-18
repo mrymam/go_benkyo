@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -28,7 +29,12 @@ func getArticle(w http.ResponseWriter, r *http.Request) {
 		Title: "title",
 	}
 	articles := []Article{article}
-	s, _ := json.Marshal(articles)
+	s, err := json.Marshal(articles)
+	if err != nil {
+		log.Printf("json encode failed: %s\n", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	fmt.Fprintf(w, string(s))
 }
 
@@ -39,13 +45,18 @@ func postArticle(w http.ResponseWriter, r *http.Request) {
 	buf.ReadFrom(r.Body)
 	jsonString := buf.String()
 	err := json.Unmarshal([]byte(jsonString), &article)
-
 	if err != nil {
+		log.Printf("json decode failed: %s\n", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	s, _ := json.Marshal(article)
+	s, err := json.Marshal(article)
+	if err != nil {
+		log.Printf("json encode failed: %s\n", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, string(s))
 }
