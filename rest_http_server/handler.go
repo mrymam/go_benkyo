@@ -23,12 +23,17 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getArticle(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
 	article := Article{
 		Title: "title",
 	}
 	articles := []Article{article}
-	s, _ := json.Marshal(articles)
+	s, err := json.Marshal(articles)
+	if err != nil {
+		fmt.Printf("json encode failed: %s\n", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, string(s))
 }
 
@@ -45,7 +50,12 @@ func postArticle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s, _ := json.Marshal(article)
+	s, err := json.Marshal(article)
+	if err != nil {
+		fmt.Printf("json encode failed: %s\n", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, string(s))
 }
